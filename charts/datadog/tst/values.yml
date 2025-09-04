@@ -1,0 +1,23 @@
+agents:
+  enabled: true
+
+  containers:
+
+    agent:
+      env:
+        - name: DD_APM_COMPUTE_STATS_BY_SPAN_KIND
+          value: "true"
+
+        - name: DD_APM_PEER_TAGS_AGGREGATION
+          value: "true"
+
+    traceAgent:
+      env:
+        - name: DD_APM_IGNORE_RESOURCES
+          value: GET /healthcheck,GET //healthcheck,GET /api/healthcheck,health_profile,/processing_conversation/health,GET /actuator/health/*,GET /healthz,GET /odie/healthcheck,GET /entrar/healthcheck,public/health-check,healthcheck,App\\Http\\Controllers\\Api\\HelthCheckController,api/is-online,exposed/health-check,App\\Http\\Controllers\\Exposed\\HealthCheckController,exposed/teste,public/teste,App\\Http\\Controllers\\Public\\TrackController,HealthcheckController#index,HealthcheckController#show,Healthcheck::HealthchecksController#check,MParticleConsumer,NotificationConsumer,OrderCompletedNotificationsConsumer,ElasticDataConsumer,OrderDeliveredConsumer,App\\Http\\Controllers\\Public\\HealthCheckController,<anonymous>
+
+        - name: DD_APM_COMPUTE_STATS_BY_SPAN_KIND
+          value: "true"
+
+        - name: DD_APM_PEER_TAGS_AGGREGATION
+          value: "true"

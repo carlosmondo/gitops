@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: clusters-datadog-helm-chart
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: admin
+        url: https://k3d-admin-serverlb:6443
+        chartVersion: 3.125.0
+      - cluster: dev
+        url: https://k3d-dev-serverlb:6443
+        chartVersion: 3.126.0
+      - cluster: qa
+        url: https://k3d-qa-serverlb:6443
+        chartVersion: 3.127.0
+      - cluster: tst
+        url: https://k3d-tst-serverlb:6443
+        chartVersion: 3.128.0
+  template:
+    metadata:
+      name: 'datadog-helm-chart-{{cluster}}'
+      labels:
+        env: prod
+        company: petlove
+        billing: sre
+        product: cicd
+        app-name: 'datadog-helm-chart-{{cluster}}'
+    spec:
+      project: sre-projects
+      sources:
+        - repoURL: 'https://helm.datadoghq.com'
+          chart: datadog
+          targetRevision: '{{chartVersion}}'
+          helm:
+            releaseName: datadog
+            valueFiles:
+            - $values/{{cluster}}/values.yml
+        - repoURL: 'https://github.com/carlosmondo/gitops'
+          path: charts/datadog
+          targetRevision: HEAD
+          ref: values
+      destination:
+        server: "{{url}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
