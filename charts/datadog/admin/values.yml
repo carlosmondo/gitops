@@ -1,3 +1,139 @@
+providers:
+  gke:
+    # providers.gke.autopilot -- Enables Datadog Agent deployment on GKE Autopilot
+    autopilot: false
+
+    # providers.gke.cos -- Enables Datadog Agent deployment on GKE with Container-Optimized OS (COS)
+    cos: true
+
+datadog:
+  dd_url: "https://us5.datadoghq.com"
+  site: "us5.datadoghq.com"
+  apiKeyExistingSecret: datadog-secret
+  containerExclude: "image:^gke.gcr.io/metrics-server.* image:^gke.gcr.io/cilium/cilium.* image:^gcr.io/datadoghq/agent.* image:^gcr.io/datadoghq/cluster-agent.* image:^docker.io/istio/pilot.*  image:^docker.io/istio/proxyv2.* image:^gke.gcr.io/cluster-proportional-autoscaler.* image:^gke.gcr.io/csi-node-driver-registrar.* image:^gke.gcr.io/event-exporter.* image:^gke.gcr.io/fluent-bit.* image:^gke.gcr.io/fluent-bit-gke-exporter.* image:^gke.gcr.io/gcp-compute-persistent-disk-csi-driver.* image:^gke.gcr.io/gke-metrics-agent.* image:^gke.gcr.io/gke-metrics-collector.* image:^gke.gcr.io/ingress-gce-404-server-with-metrics.* image:^gke.gcr.io/k8s-dns-dnsmasq-nanny.* image:^gke.gcr.io/k8s-dns-kube-dns.* image:^gke.gcr.io/k8s-dns-node-cache.* image:^gke.gcr.io/k8s-dns-sidecar.* image:^gke.gcr.io/proxy-agent.* image:^gke.gcr.io/prometheus-to-sd.* image:^gke.gcr.io/netd.* image:^gke.gcr.io/addon-resizer.* image:^asia.gke.gcr.io/gke-metrics-collector.* image:^asia.gke.gcr.io/netd.*"
+  clusterName: k8s-us-titanis
+
+  env:
+  - name: DD_TAGS
+    value: env:production bu:petlove billing:ti product:datadog
+  - name: DD_INVENTORIES_CONFIGURATION_ENABLED
+    value: "true"
+
+  asm:
+    threats:
+      # datadog.asm.threats.enabled -- Enable Application Security Management Threats App & API Protection by injecting `DD_APPSEC_ENABLED=true` environment variable to all pods in the cluster
+      enabled: false
+
+    sca:
+      # datadog.asm.sca.enabled -- Enable Application Security Management Software Composition Analysis by injecting `DD_APPSEC_SCA_ENABLED=true` environment variable to all pods in the cluster
+      enabled: false
+
+    iast:
+      # datadog.asm.iast.enabled -- Enable Application Security Management Interactive Application Security Testing by injecting `DD_IAST_ENABLED=true` environment variable to all pods in the cluster
+      enabled: false
+
+  otlp:
+    receiver:
+      protocols:
+        # datadog.otlp.receiver.protocols.grpc - OTLP/gRPC configuration
+        grpc:
+          # datadog.otlp.receiver.protocols.grpc.enabled -- Enable the OTLP/gRPC endpoint
+          enabled: true
+          # datadog.otlp.receiver.protocols.grpc.endpoint -- OTLP/gRPC endpoint
+          endpoint: "0.0.0.0:4317"
+          # datadog.otlp.receiver.protocols.grpc.useHostPort -- Enable the Host Port for the OTLP/gRPC endpoint
+          useHostPort: true
+
+        # datadog.otlp.receiver.protocols.http - OTLP/HTTP configuration
+        http:
+          # datadog.otlp.receiver.protocols.http.enabled -- Enable the OTLP/HTTP endpoint
+          enabled: true
+          # datadog.otlp.receiver.protocols.http.endpoint -- OTLP/HTTP endpoint
+          endpoint: "0.0.0.0:4318"
+          # datadog.otlp.receiver.protocols.http.useHostPort -- Enable the Host Port for the OTLP/HTTP endpoint
+          useHostPort: true
+
+  remoteConfiguration:
+    enabled: true
+
+  serviceMonitoring:
+    enabled: false
+
+  prometheusScrape:
+    enabled: false
+    serviceEndpoints: false
+
+  # confd:
+  #     envoy-config: |-
+  #       ad_identifiers:
+  #         - envoy
+  #         - istio-proxy
+  #         - proxyv2
+  #       init_config:
+  #       instances:
+  #         - openmetrics_endpoint: "http://%%host%%:15090/stats/prometheus"
+  #     cilium-config: |-
+  #       ad_identifiers:
+  #         - cilium
+  #         - cilium-agent
+  #       init_config:
+  #       instances:
+  #       - agent_endpoint: http://%%host%%:9990/metrics
+  #         tags:
+  #           - cilium-pod:%%host%%
+
+  dogstatsd:
+    port: 8125
+    useHostPort: true
+    nonLocalTraffic: true
+
+  logs:
+    enabled: false
+    containerCollectAll: false
+    containerCollectUsingFiles: false
+    autoMultiLineDetection: false
+
+  apm:
+    socketEnabled: true
+    portEnabled: true
+    port: 8126
+
+  processAgent:
+    enabled: true
+    processCollection: true
+
+  orchestratorExplorer:
+    enabled: true
+
+  systemProbe:
+    enableOOMKill: true
+    enableTCPQueueLength: true
+
+  networkMonitoring:
+    enabled: true
+
+  securityAgent:
+    compliance:
+      enabled: false
+      xccdf:
+        enabled: false
+
+    runtime:
+      fimEnabled: false
+      syscallMonitor:
+        enabled: false
+      network:
+        enabled: false
+      activityDump:
+        enabled: false
+        pathMerge:
+          enabled: false
+
+clusterAgent:
+  enabled: true
+  replicas: 2
+  createPodDisruptionBudget: true
+
 agents:
   enabled: true
 
@@ -21,3 +157,28 @@ agents:
 
         - name: DD_APM_PEER_TAGS_AGGREGATION
           value: "true"
+  # volumes:
+  # - name: confd-cilium
+  #   configMap:
+  #     name: datadog-confd
+  #     items:
+  #     - key: cilium-config
+  #       path: auto_conf.yaml
+
+  # - name: confd-envoy
+  #   configMap:
+  #     name: datadog-confd
+  #     items:
+  #     - key: envoy-config
+  #       path: auto_conf.yaml
+
+  # volumeMounts:
+  # - mountPath: /etc/datadog-agent/conf.d/cilium.d/auto_conf.yaml
+  #   name: confd-cilium
+  #   subPath: auto_conf.yaml
+  #   readOnly: true
+
+  # - mountPath: /etc/datadog-agent/conf.d/envoy.d/auto_conf.yaml
+  #   name: confd-envoy
+  #   subPath: auto_conf.yaml
+  #   readOnly: true
